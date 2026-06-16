@@ -1,0 +1,2 @@
+*.sh text eol=lf
+scripts/claw-gateway-restart text eol=lf
