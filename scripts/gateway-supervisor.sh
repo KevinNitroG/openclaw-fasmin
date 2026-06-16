@@ -6,6 +6,9 @@
 set -uo pipefail
 
 PORT="${PORT:-18789}"
+# OpenClaw bind is a MODE, not an IP: loopback | lan | tailnet | auto | custom.
+# Default to "lan" so the gateway is reachable on Railway's network (not just loopback).
+BIND="${OPENCLAW_GATEWAY_BIND:-lan}"
 GW_PID=""
 
 on_hup()  { [ -n "$GW_PID" ] && kill "$GW_PID" 2>/dev/null || true; }            # restart request
@@ -14,8 +17,10 @@ trap on_hup SIGHUP
 trap on_term SIGTERM SIGINT
 
 while true; do
-  echo "[supervisor] starting gateway on 0.0.0.0:${PORT}" >&2
-  openclaw gateway run --bind 0.0.0.0 --port "$PORT" &
+  echo "[supervisor] starting gateway (bind=${BIND} port=${PORT})" >&2
+  # --allow-unconfigured lets the gateway boot on a fresh volume (no openclaw.json yet)
+  # so it stays up for onboarding; once config exists it is read/hot-reloaded normally.
+  openclaw gateway run --bind "$BIND" --port "$PORT" --allow-unconfigured &
   GW_PID=$!
   wait "$GW_PID"
   code=$?
