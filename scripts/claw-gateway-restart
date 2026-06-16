@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# Restart the gateway in place without killing the container.
+set -euo pipefail
+if pkill -HUP -f '/usr/local/bin/gateway-supervisor.sh'; then
+  echo "gateway restart signaled"
+else
+  echo "supervisor not found — is the gateway running under the supervisor?" >&2
+  exit 1
+fi
