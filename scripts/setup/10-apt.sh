@@ -7,7 +7,7 @@ export DEBIAN_FRONTEND=noninteractive
 apt-get update
 # init, privilege drop, build deps for Homebrew, and the base toolbelt
 apt-get install -y --no-install-recommends \
-  ca-certificates curl gnupg git tini gosu less coreutils \
+  ca-certificates curl gnupg git tini gosu sudo less coreutils \
   build-essential procps file \
   ripgrep fzf vim
 
