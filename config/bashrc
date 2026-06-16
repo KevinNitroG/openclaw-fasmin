@@ -9,11 +9,6 @@ export PATH="$HOME/.local/bin:$HOME/.local/share/mise/shims:/home/linuxbrew/.lin
 # `docker exec ... bash`) point at the same volume paths the gateway uses.
 [ -f /etc/profile.d/10-openclaw-env.sh ] && . /etc/profile.d/10-openclaw-env.sh
 
-# Point the openclaw CLI/TUI at the gateway's actual port. The gateway binds $PORT
-# (Railway-injected; falls back to 18789), but the CLI defaults to 18789 — so without this
-# `openclaw tui` etc. would miss the gateway in-container. Honors a pre-set value.
-export OPENCLAW_GATEWAY_PORT="${OPENCLAW_GATEWAY_PORT:-${PORT:-18789}}"
-
 # mise activation (adds tools to PATH dynamically for this shell)
 if command -v mise >/dev/null 2>&1; then
   eval "$(mise activate bash)"
