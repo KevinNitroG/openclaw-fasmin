@@ -31,6 +31,7 @@ jobs:
           tags: |
             type=raw,value=latest
             type=sha,format=short
+            type=raw,value={{date 'YYYY.MMDD.HHmmss'}}
 
       - name: Build and push
         uses: docker/build-push-action@v7
