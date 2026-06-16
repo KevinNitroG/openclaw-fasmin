@@ -69,6 +69,11 @@ RUN chmod +x /usr/local/bin/entrypoint.sh \
              /usr/local/bin/gateway-supervisor.sh \
              /usr/local/bin/claw-gateway-restart
 
+# Railway/`docker exec` open shells as root, bypassing USER claw; hand interactive root
+# shells to claw so they get the toolbelt. Covers both login and non-login bash.
+COPY config/root-bashrc /root/.bashrc
+RUN printf '[ -f ~/.bashrc ] && . ~/.bashrc\n' > /root/.bash_profile
+
 # Default to the claw user: interactive shells (Railway shell / docker exec) get claw's
 # full config (mise, brew, zoxide, vim, openclaw completion). The entrypoint fixes the
 # volume via passwordless sudo; a root-guard re-execs as claw if ever launched as root.

@@ -1,0 +1,15 @@
+# Railway (and `docker exec`) open interactive shells as root, bypassing the image's
+# default USER. The toolbelt (mise shims, brew, completions) belongs to `claw`, so an
+# interactive root shell can't resolve `openclaw` etc. Hand such shells to `claw`.
+#
+# A deliberate escalation from claw (`sudo -i`) sets SUDO_USER, so we DON'T bounce back —
+# root remains reachable on demand. Non-interactive shells are left untouched.
+
+case $- in
+  *i*) ;;
+  *) return 2>/dev/null || exit 0 ;;
+esac
+
+if [ -z "${SUDO_USER:-}" ] && id claw >/dev/null 2>&1; then
+  exec su - claw
+fi

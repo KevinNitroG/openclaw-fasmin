@@ -29,7 +29,9 @@ The gateway boots `--allow-unconfigured` on an empty volume and stays up; you on
 
 ## First-run onboarding
 
-One-time, from the Railway shell. Writes `openclaw.json` to the volume (persists + hot-reloads).
+One-time, from the Railway shell. The shell opens as root but auto-switches to `claw` (so the
+toolbelt resolves); if you ever need root, `sudo -i`. Writes `openclaw.json` to the volume
+(persists + hot-reloads).
 
 ```bash
 openclaw onboard                 # interactive — skip the "install daemon" step
@@ -41,6 +43,26 @@ openclaw onboard --non-interactive --mode local \
   --gateway-auth token --gateway-token-ref-env OPENCLAW_GATEWAY_TOKEN \
   --skip-health --skip-skills     # do NOT pass --install-daemon
 ```
+
+## Web Control UI (CORS)
+
+The gateway only trusts loopback origins by default, so opening the Control UI from your
+Railway public domain is **blocked** ("origin not allowed") until you whitelist it. Add the
+full origin (scheme + host, **no trailing slash**) to `openclaw.json`:
+
+```json5
+{
+  gateway: {
+    controlUi: {
+      allowedOrigins: ["https://<your-app>.up.railway.app"]
+    }
+  }
+}
+```
+
+Then `claw-gateway-restart`. Use the exact public URL Railway assigned; add more entries for any
+other origins. Avoid `["*"]` (allows any origin). See
+[Control UI docs](https://docs.openclaw.ai/web/control-ui).
 
 ## Daemon notes
 
