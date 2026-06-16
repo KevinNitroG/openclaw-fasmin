@@ -1,8 +1,13 @@
 # /home/claw/.bashrc — interactive shell setup for the claw user
-case $- in *i*) ;; *) return ;; esac   # only for interactive shells
+case $- in *i*) ;; *) return ;; esac # only for interactive shells
 
 export EDITOR=vim
 export PATH="$HOME/.local/bin:$HOME/.local/share/mise/shims:/home/linuxbrew/.linuxbrew/bin:$PATH"
+
+# OPENCLAW_* / runtime env (state dir, config path, telemetry). Login shells get this via
+# /etc/profile.d; source it here too so non-login interactive shells (plain `bash`,
+# `docker exec ... bash`) point at the same volume paths the gateway uses.
+[ -f /etc/profile.d/10-openclaw-env.sh ] && . /etc/profile.d/10-openclaw-env.sh
 
 # mise activation (adds tools to PATH dynamically for this shell)
 if command -v mise >/dev/null 2>&1; then
@@ -16,7 +21,7 @@ fi
 
 # openclaw bash completion
 if command -v openclaw >/dev/null 2>&1; then
-  source <(openclaw completion bash) 2>/dev/null || true
+  source <(openclaw completion --shell bash)
 fi
 
 alias ll='ls -alh'

@@ -74,6 +74,15 @@ RUN chmod +x /usr/local/bin/entrypoint.sh \
 COPY config/root-bashrc /root/.bashrc
 RUN printf '[ -f ~/.bashrc ] && . ~/.bashrc\n' > /root/.bash_profile
 
+# Login shells (su - claw, Railway shell) reset the environment, dropping vars set only via
+# ENV. Snapshot the OPENCLAW/runtime env into a profile.d script so interactive shells point
+# at the same state dir/config as the gateway (else `openclaw onboard` writes to ~/.openclaw).
+# Generated FROM the ENV above — single source of truth, no hardcoded duplication.
+RUN for v in TZ DATA_DIR OPENCLAW_STATE_DIR OPENCLAW_CONFIG_PATH OPENCLAW_WORKSPACE_DIR \
+             DO_NOT_TRACK NEXT_TELEMETRY_DISABLED CLAWHUB_DISABLE_TELEMETRY OPENCLAW_DISABLE_BONJOUR; do \
+      printf 'export %s="%s"\n' "$v" "$(printenv "$v")"; \
+    done > /etc/profile.d/10-openclaw-env.sh
+
 # Run as claw: the gateway and interactive shells (Railway shell / docker exec) get claw's
 # full config (mise, brew, zoxide, vim, openclaw completion). The entrypoint claims the
 # runtime volume via claw's passwordless sudo.
