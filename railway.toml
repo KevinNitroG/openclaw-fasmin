@@ -1,0 +1,13 @@
+# Applies when Railway BUILDS this repo's Dockerfile (alternative path).
+# For our default path (prebuilt GHCR image), enter the same settings in the
+# Railway dashboard: Source = Docker image, Volume mount = /home/claw/data,
+# Healthcheck path = /healthz, and the env vars from the README.
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+healthcheckPath = "/healthz"
+healthcheckTimeout = 300
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
