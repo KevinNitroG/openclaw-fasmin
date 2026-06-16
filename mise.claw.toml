@@ -1,0 +1,9 @@
+# Renamed from mise.toml on purpose: a host/agent `mise` must NOT auto-detect
+# this file. It is copied to /home/claw/.config/mise/config.toml in the image.
+[tools]
+node                     = "24"
+"npm:openclaw"           = "2026.6.6"
+"npm:pnpm"               = "10.5.2"
+uv                       = "0.6.0"
+gh                       = "2.67.0"
+"github:openclaw/gogcli" = "0.27.1"
