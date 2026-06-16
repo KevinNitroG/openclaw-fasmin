@@ -11,7 +11,7 @@ base_packages=(
   # homebrew build deps
   build-essential
   # cli toolbelt
-  ripgrep fzf vim zoxide fd-find jq
+  ripgrep fzf vim zoxide fd-find jq ffmpeg
 )
 
 # yazi + the previewers/extractors it integrates with (needs the griffo.io apt repo).
