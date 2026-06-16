@@ -1,0 +1,17 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "mise": {
+    "fileMatch": ["(^|/)mise\\.claw\\.toml$"]
+  },
+  "packageRules": [
+    {
+      "matchManagers": ["mise"],
+      "groupName": "mise tools"
+    },
+    {
+      "matchManagers": ["dockerfile"],
+      "groupName": "docker base + args"
+    }
+  ]
+}
