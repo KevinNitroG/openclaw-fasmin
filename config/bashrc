@@ -9,6 +9,11 @@ if command -v mise >/dev/null 2>&1; then
   eval "$(mise activate bash)"
 fi
 
+# zoxide (smarter cd; provides `z`)
+if command -v zoxide >/dev/null 2>&1; then
+  eval "$(zoxide init bash)"
+fi
+
 # openclaw bash completion
 if command -v openclaw >/dev/null 2>&1; then
   source <(openclaw completion bash) 2>/dev/null || true
