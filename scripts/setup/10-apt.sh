@@ -6,8 +6,8 @@ export DEBIAN_FRONTEND=noninteractive
 
 # Packages from the base Debian repos (installed BEFORE the yazi apt repo is added).
 base_packages=(
-  # essential: TLS certs, fetch, gpg, vcs, init, privilege drop, pager, core utils
-  ca-certificates curl gnupg git tini gosu sudo less coreutils procps file
+  # essential: TLS certs, fetch, gpg, vcs, init, sudo, pager, core utils
+  ca-certificates curl gnupg git tini sudo less coreutils procps file
   # homebrew build deps
   build-essential
   # cli toolbelt

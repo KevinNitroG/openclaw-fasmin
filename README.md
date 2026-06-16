@@ -22,7 +22,8 @@ with a personal CLI toolbelt, built for [Railway](https://railway.com) with stat
    - Provider key(s), e.g. `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` (see [Providers](#providers)).
    - Optional: `TZ` (default `Asia/Ho_Chi_Minh`), `OPENCLAW_GATEWAY_BIND` (default `lan`).
 4. **Healthcheck path:** `/healthz`.
-5. **Port:** `18789` (Railway usually auto-detects; set target port if not). Generate a public domain.
+5. **Port:** the gateway binds Railway's injected `$PORT` automatically (falls back to `18789`
+   locally). Generate a public domain; no manual port config needed.
 6. **Enable Image Auto Updates** so Railway redeploys on a new `:latest` push.
 
 The gateway boots `--allow-unconfigured` on an empty volume and stays up; you onboard once (below).

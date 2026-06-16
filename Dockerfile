@@ -74,9 +74,9 @@ RUN chmod +x /usr/local/bin/entrypoint.sh \
 COPY config/root-bashrc /root/.bashrc
 RUN printf '[ -f ~/.bashrc ] && . ~/.bashrc\n' > /root/.bash_profile
 
-# Default to the claw user: interactive shells (Railway shell / docker exec) get claw's
-# full config (mise, brew, zoxide, vim, openclaw completion). The entrypoint fixes the
-# volume via passwordless sudo; a root-guard re-execs as claw if ever launched as root.
+# Run as claw: the gateway and interactive shells (Railway shell / docker exec) get claw's
+# full config (mise, brew, zoxide, vim, openclaw completion). The entrypoint claims the
+# runtime volume via claw's passwordless sudo.
 USER claw
 EXPOSE 18789
 ENTRYPOINT ["tini", "-s", "--"]
