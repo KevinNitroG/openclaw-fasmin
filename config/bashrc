@@ -25,6 +25,6 @@ if command -v zoxide >/dev/null 2>&1; then
 fi
 
 # OpenClaw Completion
-[ -f "${OPENCLAW_STATE_DIR}/completions/openclaw.bash" ] && source "${OPENCLAW_STATE_DIR}/completions/openclaw.bash"
+[ -f "$HOME/.local/share/bash-completion/openclaw.bash" ] && source "$HOME/.local/share/bash-completion/openclaw.bash"
 
 alias ll='ls -alh'

@@ -52,6 +52,13 @@ RUN MISE_VERSION=${MISE_VERSION} /tmp/setup/20-mise.sh
 COPY --chown=claw:claw mise.claw.toml ${CLAW_HOME}/.config/mise/config.toml
 RUN mise install
 
+# Pre-generate bash completion once at build (after openclaw is installed). NOT --write-state:
+# that targets the volume-backed state dir, which the runtime mount would hide. Bake it to a
+# fixed home path instead; .bashrc sources this so shells don't invoke openclaw on every start.
+RUN mkdir -p "${CLAW_HOME}/.local/share/bash-completion" \
+    && mise exec -- openclaw completion --shell bash \
+       > "${CLAW_HOME}/.local/share/bash-completion/openclaw.bash"
+
 # --- layer 4: Homebrew (agent availability) ---
 COPY --chown=claw:claw scripts/setup/30-brew.sh /tmp/setup/30-brew.sh
 RUN /tmp/setup/30-brew.sh
