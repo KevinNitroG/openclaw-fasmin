@@ -11,5 +11,8 @@ case $- in
 esac
 
 if [ -z "${SUDO_USER:-}" ] && id claw >/dev/null 2>&1; then
-  exec su - claw
+  # `su - claw` (login) wipes the environment, dropping Railway-injected vars (provider keys,
+  # OPENCLAW_GATEWAY_TOKEN, etc.) that root currently holds. Whitelist every exported var so
+  # they survive into the claw shell; su still forces HOME/PATH/USER/SHELL for claw itself.
+  exec su -w "$(compgen -e | paste -sd, -)" -l claw
 fi
