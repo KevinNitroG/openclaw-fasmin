@@ -1,0 +1,17 @@
+# /home/claw/.bashrc — interactive shell setup for the claw user
+case $- in *i*) ;; *) return ;; esac   # only for interactive shells
+
+export EDITOR=vim
+export PATH="$HOME/.local/bin:$HOME/.local/share/mise/shims:/home/linuxbrew/.linuxbrew/bin:$PATH"
+
+# mise activation (adds tools to PATH dynamically for this shell)
+if command -v mise >/dev/null 2>&1; then
+  eval "$(mise activate bash)"
+fi
+
+# openclaw bash completion
+if command -v openclaw >/dev/null 2>&1; then
+  source <(openclaw completion bash) 2>/dev/null || true
+fi
+
+alias ll='ls -alh'

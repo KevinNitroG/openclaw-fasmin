@@ -1,0 +1,89 @@
+" fasmin container vimrc — plugin-free baseline
+set nocompatible
+set encoding=utf-8
+set number
+set ruler
+set hidden
+set incsearch
+set hlsearch
+set ignorecase
+set smartcase
+set expandtab
+set shiftwidth=2
+set softtabstop=2
+set tabstop=2
+set autoindent
+set backspace=indent,eol,start
+set mouse=a
+set clipboard=unnamedplus
+set undofile
+set undodir=$HOME/.vim/undo
+syntax on
+filetype plugin indent on
+
+" --- replicated from ~/.vim (plugin-free) ---
+let mapleader = ' '
+let maplocalleader = '\'
+
+set relativenumber
+set scrolloff=4
+set sidescrolloff=8
+set conceallevel=0
+set showtabline=2
+set shortmess=AcqFI
+set splitbelow
+set splitright
+set nocursorcolumn
+set cursorline
+set cursorlineopt=number
+set whichwrap+=<,>,[,],h,l
+set foldmethod=indent
+set smoothscroll
+set nobackup
+set noswapfile
+set nowb
+set regexpengine=0
+set wildignorecase
+set autoread
+
+inoremap jk <Esc>
+
+nnoremap <C-s> :w<CR>
+nnoremap Y y$
+nnoremap <leader><Esc> :noh<return>
+nnoremap <leader>y :%y+<return>
+nnoremap <leader>ow :set wrap!<CR>
+nnoremap <leader>w :close<CR>
+nnoremap <C-j> <C-w>j
+vnoremap <C-j> <C-w>j
+nnoremap <C-k> <C-w>k
+vnoremap <C-k> <C-w>k
+nnoremap <C-h> <C-w>h
+vnoremap <C-h> <C-w>h
+nnoremap <C-l> <C-w>l
+vnoremap <C-l> <C-w>l
+nnoremap <A-j> :m .+1<CR>==
+nnoremap <A-k> :m .-2<CR>==
+vnoremap <A-j> :m '>+1<CR>gv=gv
+vnoremap <A-k> :m '<-2<CR>gv=gv
+vnoremap < <gv
+vnoremap > >gv
+vnoremap p "_dP
+vnoremap <leader>us :sort<CR>gv<ESC>
+vnoremap <leader>uu :sort u<CR>gv<ESC>
+nnoremap H :bprevious<CR>
+nnoremap L :bnext<CR>
+nnoremap <leader>C :bufdo bdelete<cr>
+nnoremap <C-right> :vertical resize +2<CR>
+nnoremap <C-left> :vertical resize -2<CR>
+nnoremap <C-up> :resize +2<CR>
+nnoremap <C-down> :resize -2<CR>
+nnoremap <Left> :tabprevious<CR>
+nnoremap <Right> :tabnext<CR>
+nnoremap <Up> :tabnew<CR>
+nnoremap <Down> :tabclose<CR>
+nnoremap ]<Space> :call append(line('.'), '')<CR>
+nnoremap [<Space> :call append(line('.') - 1, '')<CR>
+
+au FocusGained,BufEnter * silent! checktime
+autocmd VimEnter * silent !echo -ne "\e[2 q"
