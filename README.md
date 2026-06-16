@@ -37,12 +37,22 @@ A self-contained Docker image that runs an [OpenClaw](https://docs.openclaw.ai) 
    - Your model provider key(s), e.g. `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, or an
      OpenAI/Anthropic-compatible endpoint's key (see [Providers](#providers)).
    - Optional: `TZ` (defaults to `Asia/Ho_Chi_Minh`).
-4. **Enable Image Auto Updates** (Service → Settings → Deploy) so Railway redeploys when a new
+   - Optional: `OPENCLAW_GATEWAY_BIND` — gateway bind mode (`loopback`/`lan`/`tailnet`/`auto`/
+     `custom`). Defaults to **`lan`** so the gateway is reachable on Railway's network.
+4. **Set the health check path** (Service → Settings → Deploy → Healthcheck Path) to
+   **`/healthz`** so Railway marks a deploy healthy only once the gateway is serving.
+5. **Enable Image Auto Updates** (Service → Settings → Deploy) so Railway redeploys when a new
    image is pushed to the `:latest` tag (or bumps a semver tag).
-5. Railway routes its public URL to the gateway port and health-checks `/healthz`.
+
+**Port:** the image `EXPOSE`s **`18789`** and the gateway listens on `$PORT` (Railway injects
+this) or `18789` by default. Railway usually auto-detects the exposed port; if it doesn't,
+set the service's target/HTTP port to **`18789`**. Generate a public domain (Service →
+Settings → Networking) to reach the Control UI / gateway.
 
 The container comes up on an **empty volume** without any pre-supplied config — the gateway
-starts (secured by `OPENCLAW_GATEWAY_TOKEN`) and waits. You then onboard once (below).
+boots `--allow-unconfigured` (secured by `OPENCLAW_GATEWAY_TOKEN`) and stays up so `/healthz`
+responds. You then onboard once (below), which writes the real config to the volume and
+hot-reloads it.
 
 ## First-run onboarding
 
@@ -96,18 +106,22 @@ image.
 
 - **API-key providers** (OpenAI, Anthropic, Google, OpenRouter, …): set the provider's API key
   env var in Railway and select it during onboarding, or reference it from `openclaw.json`.
-- **opencode** (or any OpenAI/Anthropic-compatible endpoint): configure it as a custom provider
-  — base URL + API key via env vars — during onboarding (choose the custom/compatible provider
-  path) or in `models.providers.*` in `openclaw.json`. Set the corresponding key env var in
-  Railway. _(Exact field names to be filled in once verified during implementation.)_
+- **opencode** (or any OpenAI/Anthropic-compatible endpoint): configure it as a custom provider.
+  During `openclaw onboard`, choose the custom / "Unknown" provider path and give it opencode's
+  base URL + API key; or add it directly under `models.providers.*` in `openclaw.json` (with the
+  base URL and an `apiKey` referencing a Railway env var). Set that key env var in Railway. See
+  <https://docs.openclaw.ai/gateway/configuration> for the provider config shape.
 
 ## Browser
 
 The agent uses a browser through OpenClaw's browser tool.
 
-- **Default: local chromium** baked into the image, run headless. The agent's browser profile
-  is stored under the state dir (on the volume), so logins persist. Controlled by the
-  `OPENCLAW_INSTALL_BROWSER` build arg (default on; set to `0` to build without chromium).
+- **Default: local chromium** baked into the image at `/usr/bin/chromium` (verified: Chromium
+  149 on bookworm), run headless. OpenClaw auto-detects it; if it doesn't, set
+  `browser.executablePath: "/usr/bin/chromium"` in `openclaw.json`. In a container you will
+  typically also want `browser.noSandbox: true`. The agent's browser profile is stored under
+  the state dir (on the volume), so logins persist. Controlled by the `OPENCLAW_INSTALL_BROWSER`
+  build arg (default on; set to `0` to build without chromium).
 - **Optional: remote CDP browser.** Point OpenClaw at a browser running elsewhere via
   `browser.profiles.<name>.cdpUrl` + `attachOnly: true`. This is how you'd use
   [undetectable.io](https://undetectable.io) (a desktop antidetect browser that can't run
@@ -132,16 +146,53 @@ Renovate keeps things current:
 apt packages (chromium, yazi, …) are intentionally **not** version-pinned — the Debian repos
 drop old versions, so pinning would break builds. They track the distro.
 
-## Backup
+## Backup & restore
 
-Today, persistence is **Railway-volume-only**. Treat the volume as the source of truth for
-state + workspace. A git-based backup/restore of the data dirs is a possible future addition.
+Persistence is **Railway-volume-only**: everything (config, sessions, credentials, auth
+profiles, browser profile, workspace) lives under **`/home/claw/data`**. To back up or migrate
+to a new deployment, you copy that one directory.
+
+### Back up (from a running service)
+
+Open the Railway shell for the service and stream a tarball out:
+
+```bash
+# inside the Railway shell
+tar czf - -C /home/claw/data . > /tmp/claw-backup.tgz
+```
+Download `/tmp/claw-backup.tgz` (or pipe it through `railway ssh ... > claw-backup.tgz` from
+your machine). Railway also offers its own volume snapshots/backups — either works.
+
+### Restore into a NEW deployment
+
+1. Create the new service from the image and **attach a fresh volume at `/home/claw/data`**
+   (see [Deploy](#deploy-on-railway)). Let it boot once so the volume exists.
+2. Copy your backup in and unpack it over the volume, then fix ownership and restart:
+   ```bash
+   # from your machine: push the archive into the new container's shell, or upload it first
+   # then, inside the new service's Railway shell:
+   tar xzf /tmp/claw-backup.tgz -C /home/claw/data
+   sudo chown -R claw:claw /home/claw/data
+   claw-gateway-restart
+   ```
+3. The restored `openclaw.json` + credentials are picked up on restart (config also
+   hot-reloads). No re-onboarding needed — your state, sessions, and logins come back.
+
+> Tip: keep the same `OPENCLAW_GATEWAY_TOKEN` and provider env vars on the new service as the
+> old one, so existing clients and auth keep working unchanged.
+
+Locally (e.g. moving between docker hosts) the same archive restores into a docker volume:
+```bash
+docker run --rm -v <newvol>:/data -v "$PWD":/b alpine \
+  sh -c 'tar xzf /b/claw-backup.tgz -C /data && chown -R 1000:1000 /data'
+```
 
 ## Development / testing
 
-The image is built in CI and pushed to public GHCR. A `test/` smoke script builds the image
-and runs it in a **temporary docker container**, polling `/healthz` and asserting the toolbelt
-and bootstrap behavior, then tears everything down. See `test/` (added during implementation).
+The image is built in CI and pushed to public GHCR. `test/smoke.sh` builds the image and runs
+it in a **real temporary docker container**, waits for `/healthz`, asserts the toolbelt
+(openclaw, rg, fzf, yazi, vim, gh, uv, chromium, sudo) and the data dirs/ownership, then tears
+everything down. Run it with `./test/smoke.sh`.
 
 ## Layout
 
