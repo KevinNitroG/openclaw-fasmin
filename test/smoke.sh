@@ -24,7 +24,7 @@ echo "== run =="
 docker volume create "$VOL" >/dev/null
 docker run -d --name "$NAME" \
   -e OPENCLAW_GATEWAY_TOKEN=smoke-token \
-  -v "$VOL:/home/claw/data" \
+  -v "$VOL:/root/data" \
   -p 18789 "$IMAGE" >/dev/null
 
 echo "== wait for /healthz =="
@@ -39,8 +39,11 @@ if [ "$ok" != "1" ]; then
   echo "FAIL: gateway never became healthy"; docker logs "$NAME"; exit 1
 fi
 
+echo "== runs as root =="
+docker exec "$NAME" bash -lc 'test "$(id -un)" = root && echo ROOT_OK'
+
 echo "== toolbelt =="
-docker exec -u claw "$NAME" bash -lc '
+docker exec "$NAME" bash -lc '
   set -e
   openclaw --version
   rg --version | head -1
@@ -49,8 +52,6 @@ docker exec -u claw "$NAME" bash -lc '
   vim --version | head -1
   gh --version | head -1
   uv --version
-  brew --version | head -1
-  sudo -n true && echo SUDO_OK
 '
 
 echo "== browser (informational) =="
@@ -59,9 +60,8 @@ docker exec "$NAME" bash -lc 'command -v chromium && chromium --version' \
 
 echo "== data dirs =="
 docker exec "$NAME" bash -lc '
-  test -d /home/claw/data/openclaw &&
-  test -d /home/claw/data/openclaw-workspace &&
-  stat -c "%U" /home/claw/data/openclaw | grep -qx claw &&
+  test -d /root/data/openclaw &&
+  test -d /root/data/openclaw-workspace &&
   echo DIRS_OK
 '
 
