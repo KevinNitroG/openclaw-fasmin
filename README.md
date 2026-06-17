@@ -6,17 +6,16 @@ with a personal CLI toolbelt, built for [Railway](https://railway.com) with stat
 - **Image:** `ghcr.io/kevinnitrog/openclaw-fasmin` (public)
 - **Railway-agnostic** — runs anywhere; Railway specifics live only in [`railway.toml`](./railway.toml).
 - **Declarative tooling** — versions pinned + renovate-tracked.
-- **Runs as non-root `claw`** (uid 1000) with passwordless sudo (agent gets root on demand).
+- **Runs as root** — a single-purpose, single-tenant image; the agent has full access inside the container.
 
 **Where things are declared:**
 - Language tools / CLIs (node, openclaw, pnpm, uv, gh, gogcli): [`mise.claw.toml`](./mise.claw.toml)
 - System packages (toolbelt, yazi + deps, chromium): [`scripts/setup/10-apt.sh`](./scripts/setup/10-apt.sh)
-- Homebrew is installed for the agent to use at runtime (not for baked tools).
 
 ## Deploy on Railway
 
 1. **Service from image:** `ghcr.io/kevinnitrog/openclaw-fasmin:latest` (public — no auth).
-2. **Volume:** mount at **`/home/claw/data`** (single persisted location).
+2. **Volume:** mount at **`/root/data`** (single persisted location).
 3. **Variables:**
    - `OPENCLAW_GATEWAY_TOKEN` — **required**, a long random secret (gateway is publicly reachable).
    - Provider key(s), e.g. `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` (see [Providers](#providers)).
@@ -30,9 +29,8 @@ The gateway boots `--allow-unconfigured` on an empty volume and stays up; you on
 
 ## First-run onboarding
 
-One-time, from the Railway shell. The shell opens as root but auto-switches to `claw` (so the
-toolbelt resolves); if you ever need root, `sudo -i`. Writes `openclaw.json` to the volume
-(persists + hot-reloads).
+One-time, from the Railway shell. The shell opens as root with the full toolbelt on PATH.
+Writes `openclaw.json` to the volume (persists + hot-reloads).
 
 ```bash
 openclaw onboard                 # interactive — skip the "install daemon" step
@@ -97,21 +95,20 @@ Runtime config only — keys go in Railway env vars, never the image.
 - Logs: `openclaw logs --follow`
 - Health: `openclaw gateway status`; HTTP `/healthz`, `/readyz`
 - Restart gateway: `claw-gateway-restart`
-- Shell in: Railway's built-in service shell (lands as `claw`, with full config)
+- Shell in: Railway's built-in service shell (lands as root, with full config)
 
 ## Backup & restore
 
-Persistence is **volume-only**: everything lives under `/home/claw/data`.
+Persistence is **volume-only**: everything lives under `/root/data`.
 
 Back up (from the Railway shell):
 ```bash
-tar czf - -C /home/claw/data . > /tmp/claw-backup.tgz   # then download it
+tar czf - -C /root/data . > /tmp/claw-backup.tgz   # then download it
 ```
 
-Restore into a **new** deployment (fresh volume at `/home/claw/data`, booted once):
+Restore into a **new** deployment (fresh volume at `/root/data`, booted once):
 ```bash
-tar xzf /tmp/claw-backup.tgz -C /home/claw/data
-sudo chown -R claw:claw /home/claw/data
+tar xzf /tmp/claw-backup.tgz -C /root/data
 claw-gateway-restart
 ```
 Keep the same `OPENCLAW_GATEWAY_TOKEN` + provider vars so clients/auth keep working.
