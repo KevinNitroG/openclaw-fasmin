@@ -9,7 +9,7 @@ base_packages=(
   # essential: TLS certs, fetch, gpg, vcs, init, pager, core utils
   ca-certificates curl gnupg git tini less coreutils procps file
   # cli toolbelt
-  ripgrep fzf vim zoxide fd-find jq ffmpeg
+  ripgrep fzf vim zoxide fd-find jq ffmpeg tmux
 )
 
 # yazi + the previewers/extractors it integrates with (needs the griffo.io apt repo).
