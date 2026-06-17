@@ -1,6 +1,9 @@
 # /root/.profile — login shell environment (root-only image)
 export EDITOR=vim
 export PAGER=less
+
+# Guess we are not facing the issue
+#
 # mise binary + shims on PATH (also set via Dockerfile ENV; kept here for login shells)
-export PATH="$HOME/.local/bin:$HOME/.local/share/mise/shims:$PATH"
-[ -n "${BASH_VERSION:-}" ] && [ -f "$HOME/.bashrc" ] && . "$HOME/.bashrc"
+# export PATH="$HOME/.local/bin:$HOME/.local/share/mise/shims:$PATH"
+# [ -n "${BASH_VERSION:-}" ] && [ -f "$HOME/.bashrc" ] && . "$HOME/.bashrc"

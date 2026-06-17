@@ -19,22 +19,22 @@ ARG TZ=Asia/Ho_Chi_Minh
 # Per mise docs, putting the shims dir on PATH is the way to resolve tools in init-script
 # / non-interactive contexts. .local/bin holds the mise binary itself.
 ENV DATA_DIR=${DATA_DIR} \
-    TZ=${TZ} \
-    NODE_ENV=production \
-    EDITOR=vim \
-    DO_NOT_TRACK=1 \
-    NEXT_TELEMETRY_DISABLED=1 \
-    CLAWHUB_DISABLE_TELEMETRY=1 \
-    OPENCLAW_DISABLE_BONJOUR=1 \
-    OPENCLAW_STATE_DIR=${DATA_DIR}/openclaw \
-    OPENCLAW_CONFIG_PATH=${DATA_DIR}/openclaw/openclaw.json \
-    OPENCLAW_WORKSPACE_DIR=${DATA_DIR}/openclaw-workspace \
-    PATH=/root/.local/bin:/root/.local/share/mise/shims:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+  TZ=${TZ} \
+  NODE_ENV=production \
+  EDITOR=vim \
+  DO_NOT_TRACK=1 \
+  NEXT_TELEMETRY_DISABLED=1 \
+  CLAWHUB_DISABLE_TELEMETRY=1 \
+  OPENCLAW_DISABLE_BONJOUR=1 \
+  OPENCLAW_STATE_DIR=${DATA_DIR}/openclaw \
+  OPENCLAW_CONFIG_PATH=${DATA_DIR}/openclaw/openclaw.json \
+  OPENCLAW_WORKSPACE_DIR=${DATA_DIR}/openclaw-workspace \
+  PATH=/root/.local/bin:/root/.local/share/mise/shims:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 # --- layer 1: system packages (changes rarely) ---
 COPY scripts/setup/10-apt.sh /tmp/setup/10-apt.sh
 RUN OPENCLAW_INSTALL_BROWSER=${OPENCLAW_INSTALL_BROWSER} /tmp/setup/10-apt.sh \
-    && rm -rf /var/lib/apt/lists/*
+  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /root
 
@@ -50,29 +50,28 @@ RUN mise install
 # that targets the volume-backed state dir, which the runtime mount would hide. Bake it to a
 # fixed home path instead; .bashrc sources this so shells don't invoke openclaw on every start.
 RUN mkdir -p /root/.local/share/bash-completion \
-    && mise exec -- openclaw completion --shell bash \
-       > /root/.local/share/bash-completion/openclaw.bash
+  && mise exec -- openclaw completion --shell bash \
+  > /root/.local/share/bash-completion/openclaw.bash
 
 # --- layer 4: config + runtime scripts (changes most often) ---
 COPY config/bashrc  /root/.bashrc
 COPY config/profile /root/.profile
 COPY config/vimrc   /root/.vimrc
 COPY scripts/entrypoint.sh scripts/gateway-supervisor.sh scripts/claw-gateway-restart \
-     /usr/local/bin/
-RUN chmod +x /usr/local/bin/entrypoint.sh \
-             /usr/local/bin/gateway-supervisor.sh \
-             /usr/local/bin/claw-gateway-restart
+  /usr/local/bin/
 
+# NOTE: temporary disable this, because it won't happen when we are root now
+#
 # Login shells (Railway shell, `su -`) reset the environment, dropping vars set only via ENV.
 # Snapshot the OPENCLAW/runtime env into a profile.d script so interactive login shells point
 # at the same state dir/config as the gateway (else `openclaw onboard` writes to ~/.openclaw).
 # Generated FROM the ENV above — single source of truth, no hardcoded duplication. Each var is
 # emitted as `${VAR:-<baked>}` so a runtime `-e VAR=...` override still wins in the shell (e.g.
 # `-e TZ=...`), matching what the gateway process sees instead of clobbering it back.
-RUN for v in TZ DATA_DIR OPENCLAW_STATE_DIR OPENCLAW_CONFIG_PATH OPENCLAW_WORKSPACE_DIR \
-             DO_NOT_TRACK NEXT_TELEMETRY_DISABLED CLAWHUB_DISABLE_TELEMETRY OPENCLAW_DISABLE_BONJOUR; do \
-      printf 'export %s="${%s:-%s}"\n' "$v" "$v" "$(printenv "$v")"; \
-    done > /etc/profile.d/10-openclaw-env.sh
+# RUN for v in TZ DATA_DIR OPENCLAW_STATE_DIR OPENCLAW_CONFIG_PATH OPENCLAW_WORKSPACE_DIR \
+#              DO_NOT_TRACK NEXT_TELEMETRY_DISABLED CLAWHUB_DISABLE_TELEMETRY OPENCLAW_DISABLE_BONJOUR; do \
+#       printf 'export %s="${%s:-%s}"\n' "$v" "$v" "$(printenv "$v")"; \
+#     done > /etc/profile.d/10-openclaw-env.sh
 
 EXPOSE 18789
 ENTRYPOINT ["tini", "-s", "--"]
