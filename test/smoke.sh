@@ -24,7 +24,7 @@ echo "== run =="
 docker volume create "$VOL" >/dev/null
 docker run -d --name "$NAME" \
   -e OPENCLAW_GATEWAY_TOKEN=smoke-token \
-  -v "$VOL:/root/data" \
+  -v "$VOL:/root/.openclaw" \
   -p 18789 "$IMAGE" >/dev/null
 
 echo "== wait for /healthz =="
@@ -84,11 +84,17 @@ echo "== browser (informational) =="
 docker exec "$NAME" bash -lc 'command -v chromium && chromium --version' \
   || echo "chromium absent (ok only if built with OPENCLAW_INSTALL_BROWSER=0)"
 
-echo "== data dirs =="
+echo "== state dir (default /root/.openclaw, vars unset) =="
 docker exec "$NAME" bash -lc '
-  test -d /root/data/openclaw &&
-  test -d /root/data/openclaw-workspace &&
-  echo DIRS_OK
+  set -eu
+  # Image must NOT bake the OpenClaw path vars — OpenClaw defaults must apply.
+  [ -z "${OPENCLAW_STATE_DIR:-}" ]     || { echo "FAIL: OPENCLAW_STATE_DIR is set ($OPENCLAW_STATE_DIR)"; exit 1; }
+  [ -z "${OPENCLAW_CONFIG_PATH:-}" ]   || { echo "FAIL: OPENCLAW_CONFIG_PATH is set ($OPENCLAW_CONFIG_PATH)"; exit 1; }
+  [ -z "${OPENCLAW_WORKSPACE_DIR:-}" ] || { echo "FAIL: OPENCLAW_WORKSPACE_DIR is set ($OPENCLAW_WORKSPACE_DIR)"; exit 1; }
+  # The mounted state dir must exist, be writable, and be in use by the (healthy) gateway.
+  test -d /root/.openclaw && test -w /root/.openclaw || { echo "FAIL: /root/.openclaw missing or not writable"; exit 1; }
+  [ -n "$(ls -A /root/.openclaw)" ] || { echo "FAIL: /root/.openclaw is empty — gateway did not write state there"; exit 1; }
+  echo STATE_DIR_OK
 '
 
 echo "ALL SMOKE CHECKS PASSED"
