@@ -15,11 +15,14 @@ with a personal CLI toolbelt, built for [Railway](https://railway.com) with stat
 ## Deploy on Railway
 
 1. **Service from image:** `ghcr.io/kevinnitrog/openclaw-fasmin:latest` (public — no auth).
-2. **Volume:** mount at **`/root/data`** (single persisted location).
+2. **Volume:** mount at **`/root/.openclaw`** (OpenClaw's state dir — config, credentials, sessions, and workspace all live here).
 3. **Variables:**
    - `OPENCLAW_GATEWAY_TOKEN` — **required**, a long random secret (gateway is publicly reachable).
    - Provider key(s), e.g. `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` (see [Providers](#providers)).
    - Optional: `TZ` (default `Asia/Ho_Chi_Minh`), `OPENCLAW_GATEWAY_BIND` (default `lan`).
+   - Optional path overrides (independent; unset → OpenClaw defaults under `/root/.openclaw`):
+     `OPENCLAW_STATE_DIR` (→ `/root/.openclaw`), `OPENCLAW_CONFIG_PATH` (→ `/root/.openclaw/openclaw.json`),
+     `OPENCLAW_WORKSPACE_DIR` (→ `/root/.openclaw/workspace`). If you relocate the state dir, mount the volume there instead.
 4. **Healthcheck path:** `/healthz`.
 5. **Port:** the gateway binds Railway's injected `$PORT` automatically (falls back to `18789`
    locally). Generate a public domain; no manual port config needed.
@@ -99,16 +102,16 @@ Runtime config only — keys go in Railway env vars, never the image.
 
 ## Backup & restore
 
-Persistence is **volume-only**: everything lives under `/root/data`.
+Persistence is **volume-only**: everything lives under `/root/.openclaw`.
 
 Back up (from the Railway shell):
 ```bash
-tar czf - -C /root/data . > /tmp/claw-backup.tgz   # then download it
+tar czf - -C /root/.openclaw . > /tmp/claw-backup.tgz   # then download it
 ```
 
-Restore into a **new** deployment (fresh volume at `/root/data`, booted once):
+Restore into a **new** deployment (fresh volume at `/root/.openclaw`, booted once):
 ```bash
-tar xzf /tmp/claw-backup.tgz -C /root/data
+tar xzf /tmp/claw-backup.tgz -C /root/.openclaw
 claw-gateway-restart
 ```
 Keep the same `OPENCLAW_GATEWAY_TOKEN` + provider vars so clients/auth keep working.
