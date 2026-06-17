@@ -1,8 +1,8 @@
-# /home/claw/.bashrc — interactive shell setup for the claw user
+# /root/.bashrc — interactive shell setup (root-only image)
 case $- in *i*) ;; *) return ;; esac # only for interactive shells
 
 export EDITOR=vim
-export PATH="$HOME/.local/bin:$HOME/.local/share/mise/shims:/home/linuxbrew/.linuxbrew/bin:$PATH"
+export PATH="$HOME/.local/bin:$HOME/.local/share/mise/shims:$PATH"
 
 # OPENCLAW_* / runtime env (state dir, config path, telemetry). Login shells get this via
 # /etc/profile.d; source it here too so non-login interactive shells (plain `bash`,

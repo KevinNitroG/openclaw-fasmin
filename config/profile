@@ -1,6 +1,6 @@
-# /home/claw/.profile — login shell environment for the claw user
+# /root/.profile — login shell environment (root-only image)
 export EDITOR=vim
 export PAGER=less
 # mise binary + shims on PATH (also set via Dockerfile ENV; kept here for login shells)
-export PATH="$HOME/.local/bin:$HOME/.local/share/mise/shims:/home/linuxbrew/.linuxbrew/bin:$PATH"
+export PATH="$HOME/.local/bin:$HOME/.local/share/mise/shims:$PATH"
 [ -n "${BASH_VERSION:-}" ] && [ -f "$HOME/.bashrc" ] && . "$HOME/.bashrc"
