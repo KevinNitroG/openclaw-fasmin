@@ -1,12 +1,8 @@
+# /root/.bashrc — interactive shell setup (root-only image)
+case $- in *i*) ;; *) return ;; esac # only for interactive shells
+
 export EDITOR=vim
 export PATH="$HOME/.local/bin:$HOME/.local/share/mise/shims:$PATH"
-
-# NOTE: temporary disable, may not needed
-#
-# OPENCLAW_* / runtime env (state dir, config path, telemetry). Login shells get this via
-# /etc/profile.d; source it here too so non-login interactive shells (plain `bash`,
-# `docker exec ... bash`) point at the same volume paths the gateway uses.
-# [ -f /etc/profile.d/10-openclaw-env.sh ] && . /etc/profile.d/10-openclaw-env.sh
 
 # mise activation (adds tools to PATH dynamically for this shell)
 if command -v mise >/dev/null 2>&1; then

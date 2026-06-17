@@ -1,9 +1,9 @@
 # /root/.profile — login shell environment (root-only image)
 export EDITOR=vim
 export PAGER=less
-
-# Guess we are not facing the issue
-#
-# mise binary + shims on PATH (also set via Dockerfile ENV; kept here for login shells)
-# export PATH="$HOME/.local/bin:$HOME/.local/share/mise/shims:$PATH"
-# [ -n "${BASH_VERSION:-}" ] && [ -f "$HOME/.bashrc" ] && . "$HOME/.bashrc"
+# Re-add mise binary + shims to PATH. REQUIRED for login shells (Railway shell, `bash -l`,
+# `su -`): Debian's /etc/profile resets root's PATH to system dirs, dropping the shims baked
+# into the image ENV. Without this line the toolbelt (node, openclaw, gh, ...) is unreachable
+# in login shells. Do not remove.
+export PATH="$HOME/.local/bin:$HOME/.local/share/mise/shims:$PATH"
+[ -n "${BASH_VERSION:-}" ] && [ -f "$HOME/.bashrc" ] && . "$HOME/.bashrc"
