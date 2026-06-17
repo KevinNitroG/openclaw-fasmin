@@ -62,8 +62,8 @@ docker exec "$NAME" bash -lc '
   set -eu
   prefix=/root/.local/share/mise
   # command name <- mise.claw.toml entry:
-  #   node, openclaw(npm), ctx7(npm), pnpm, uv, gh, gogcli(github), lazygit, htmlq, opencode, python
-  tools="node openclaw ctx7 pnpm uv gh gogcli lazygit htmlq opencode python"
+  #   node, openclaw(npm), ctx7(npm), pnpm, uv, gh, gog(github:openclaw/gogcli), lazygit, htmlq, opencode, python
+  tools="node openclaw ctx7 pnpm uv gh gog lazygit htmlq opencode python"
   fail=0
   for t in $tools; do
     if ! p="$(command -v "$t" 2>/dev/null)"; then
