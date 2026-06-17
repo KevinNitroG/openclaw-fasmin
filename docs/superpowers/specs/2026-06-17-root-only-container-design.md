@@ -53,9 +53,14 @@ every runtime script runs as root, and the home directory moves from
   `/root/.local/share/bash-completion/openclaw.bash`.
 - **Remove the `root-bashrc` + `/root/.bash_profile` bounce block** — root is now
   the only user; there is nothing to hand off to.
-- **Keep** the `/etc/profile.d/10-openclaw-env.sh` generation: a root *login*
-  shell (Railway shell, `su -`) still resets the environment, so the snapshot
-  keeps interactive shells pointed at the gateway's state dir/config.
+- **No `/etc/profile.d/10-openclaw-env.sh` snapshot.** (Initially this spec kept
+  it; it was later removed after verification.) Because the image is root-only
+  with no `su -` switch, interactive shells (Railway shell, `docker exec`)
+  inherit the baked `ENV` directly — so `OPENCLAW_*` and other env vars survive
+  without any re-export. The snapshot was only load-bearing under the old
+  `su - claw` env-wipe, which no longer exists. **`PATH` is the one exception**
+  (see config/profile below): Debian's `/etc/profile` unconditionally resets
+  root's `PATH` for *login* shells, so the shims must be re-added there.
 - **Final stage:** no `USER` line. `ENTRYPOINT`/`CMD` unchanged.
 
 ### scripts/setup/
@@ -78,11 +83,22 @@ every runtime script runs as root, and the home directory moves from
 ### config/
 
 - **`bashrc`:** drop the linuxbrew segment from `PATH`; update the header comment
-  to `/root`.
+  to `/root`. Keep the interactive guard (`case $- in *i*) … return`) so
+  `mise activate`/zoxide/completion don't run in non-interactive shells.
 - **`profile`:** drop the linuxbrew segment from `PATH`; update the header
-  comment to `/root`.
+  comment to `/root`. **Keep the `PATH` re-export and the `. ~/.bashrc` source —
+  both are load-bearing for login shells.** Debian's `/etc/profile` resets root's
+  `PATH` to system dirs on login (`bash -l`, Railway shell, `su -`), dropping the
+  mise shims baked into the image `ENV`; this line re-adds them, otherwise the
+  toolbelt (`node`, `openclaw`, `gh`, …) is unreachable in login shells. The
+  comment in the file says "do not remove."
 - **`root-bashrc`:** **delete** (no longer referenced).
 - **`vimrc`:** no change.
+
+> **Verification note (post-implementation):** built the image and confirmed
+> `node`/`openclaw` resolve and `OPENCLAW_STATE_DIR` is set in all of `bash -c`
+> (non-login), `bash -lc` (login), and `sh -c`. Env survives via inheritance;
+> login-shell `PATH` is covered by the `config/profile` re-export.
 
 ### mise.claw.toml
 
