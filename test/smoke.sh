@@ -54,6 +54,32 @@ docker exec "$NAME" bash -lc '
   uv --version
 '
 
+# Every tool declared in mise.claw.toml must be on PATH and resolve under mise's data
+# dir (shims at /root/.local/share/mise/shims, installs at .../installs). We prefix-match
+# that dir rather than asserting `mise which` so the check holds however PATH is wired.
+echo "== mise-managed tools =="
+docker exec "$NAME" bash -lc '
+  set -eu
+  prefix=/root/.local/share/mise
+  # command name <- mise.claw.toml entry:
+  #   node, openclaw(npm), ctx7(npm), pnpm, uv, gh, gogcli(github), lazygit, htmlq, opencode, python
+  tools="node openclaw ctx7 pnpm uv gh gogcli lazygit htmlq opencode python"
+  fail=0
+  for t in $tools; do
+    if ! p="$(command -v "$t" 2>/dev/null)"; then
+      echo "  MISSING: $t (not on PATH)"; fail=1; continue
+    fi
+    # resolve symlinks too, so the assertion survives either shim or install layout
+    rp="$(readlink -f "$p" 2>/dev/null || echo "$p")"
+    if [ "${p#"$prefix"/}" != "$p" ] || [ "${rp#"$prefix"/}" != "$rp" ]; then
+      echo "  ok: $t -> $p"
+    else
+      echo "  WRONG PREFIX: $t -> $p (resolved $rp; expected under $prefix)"; fail=1
+    fi
+  done
+  [ "$fail" = 0 ] && echo MISE_TOOLS_OK || { echo "FAIL: mise tool check"; exit 1; }
+'
+
 echo "== browser (informational) =="
 docker exec "$NAME" bash -lc 'command -v chromium && chromium --version' \
   || echo "chromium absent (ok only if built with OPENCLAW_INSTALL_BROWSER=0)"
