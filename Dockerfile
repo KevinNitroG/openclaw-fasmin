@@ -66,10 +66,12 @@ RUN chmod +x /usr/local/bin/entrypoint.sh \
 # Login shells (Railway shell, `su -`) reset the environment, dropping vars set only via ENV.
 # Snapshot the OPENCLAW/runtime env into a profile.d script so interactive login shells point
 # at the same state dir/config as the gateway (else `openclaw onboard` writes to ~/.openclaw).
-# Generated FROM the ENV above — single source of truth, no hardcoded duplication.
+# Generated FROM the ENV above — single source of truth, no hardcoded duplication. Each var is
+# emitted as `${VAR:-<baked>}` so a runtime `-e VAR=...` override still wins in the shell (e.g.
+# `-e TZ=...`), matching what the gateway process sees instead of clobbering it back.
 RUN for v in TZ DATA_DIR OPENCLAW_STATE_DIR OPENCLAW_CONFIG_PATH OPENCLAW_WORKSPACE_DIR \
              DO_NOT_TRACK NEXT_TELEMETRY_DISABLED CLAWHUB_DISABLE_TELEMETRY OPENCLAW_DISABLE_BONJOUR; do \
-      printf 'export %s="%s"\n' "$v" "$(printenv "$v")"; \
+      printf 'export %s="${%s:-%s}"\n' "$v" "$v" "$(printenv "$v")"; \
     done > /etc/profile.d/10-openclaw-env.sh
 
 EXPOSE 18789
