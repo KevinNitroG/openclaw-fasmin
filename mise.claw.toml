@@ -1,5 +1,5 @@
 # Renamed from mise.toml on purpose: a host/agent `mise` must NOT auto-detect
-# this file. It is copied to /home/claw/.config/mise/config.toml in the image.
+# this file. It is copied to /root/.config/mise/config.toml in the image.
 [tools]
 node = "24"
 "npm:openclaw" = { version = "2026.6.6", npm_args = "--ignore-scripts=false" }
