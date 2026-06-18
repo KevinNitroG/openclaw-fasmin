@@ -1,17 +1,9 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:recommended"],
+  "timezone": "Asia/Ho_Chi_Minh",
+  "schedule": ["* 0-4 * * 0,6"],
   "mise": {
     "fileMatch": ["(^|/)mise\\.claw\\.toml$"]
-  },
-  "packageRules": [
-    {
-      "matchManagers": ["mise"],
-      "groupName": "mise tools"
-    },
-    {
-      "matchManagers": ["dockerfile"],
-      "groupName": "docker base + args"
-    }
-  ]
+  }
 }
