@@ -45,6 +45,9 @@ RUN mise install
 COPY scripts/setup/30-bash.sh /tmp/setup/30-bash.sh
 RUN /tmp/setup/30-bash.sh
 
+COPY scripts/setup/40-openclaw.sh /tmp/setup/40-openclaw.sh
+RUN /tmp/setup/40-openclaw.sh
+
 COPY config/bashrc /root/.bashrc
 COPY config/profile /root/.profile
 COPY config/vimrc /root/.vimrc

@@ -4,6 +4,22 @@
   "timezone": "Asia/Ho_Chi_Minh",
   "schedule": ["* 0-4 * * 0,6"],
   "mise": {
-    "fileMatch": ["(^|/)mise\\.claw\\.toml$"]
-  }
+    "managerFilePatterns": ["/(^|/)mise\\.claw\\.toml$/"]
+  },
+  "customManagers": [
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/scripts/setup/40-openclaw\\.sh$/"],
+      "matchStrings": ["OFFICIAL_VERSION=\"(?<currentValue>\\d+\\.\\d+\\.\\d+)\""],
+      "depNameTemplate": "openclaw",
+      "datasourceTemplate": "npm"
+    }
+  ],
+  "packageRules": [
+    {
+      "matchPackageNames": ["npm:openclaw", "openclaw"],
+      "groupName": "openclaw",
+      "groupSlug": "openclaw"
+    }
+  ]
 }
