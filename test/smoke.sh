@@ -24,7 +24,7 @@ echo "== run =="
 docker volume create "$VOL" >/dev/null
 docker run -d --name "$NAME" \
   -e OPENCLAW_GATEWAY_TOKEN=smoke-token \
-  -v "$VOL:/home/claw/data" \
+  -v "$VOL:/root/data" \
   -p 18789 "$IMAGE" >/dev/null
 
 echo "== wait for /healthz =="
@@ -39,8 +39,11 @@ if [ "$ok" != "1" ]; then
   echo "FAIL: gateway never became healthy"; docker logs "$NAME"; exit 1
 fi
 
+echo "== runs as root =="
+docker exec "$NAME" bash -lc 'test "$(id -un)" = root && echo ROOT_OK'
+
 echo "== toolbelt =="
-docker exec -u claw "$NAME" bash -lc '
+docker exec "$NAME" bash -lc '
   set -e
   openclaw --version
   rg --version | head -1
@@ -49,8 +52,32 @@ docker exec -u claw "$NAME" bash -lc '
   vim --version | head -1
   gh --version | head -1
   uv --version
-  brew --version | head -1
-  sudo -n true && echo SUDO_OK
+'
+
+# Every tool declared in mise.claw.toml must be on PATH and resolve under mise's data
+# dir (shims at /root/.local/share/mise/shims, installs at .../installs). We prefix-match
+# that dir rather than asserting `mise which` so the check holds however PATH is wired.
+echo "== mise-managed tools =="
+docker exec "$NAME" bash -lc '
+  set -eu
+  prefix=/root/.local/share/mise
+  # command name <- mise.claw.toml entry:
+  #   node, openclaw(npm), ctx7(npm), pnpm, uv, gh, gog(github:openclaw/gogcli), lazygit, htmlq, opencode, python
+  tools="node openclaw ctx7 pnpm uv gh gog lazygit htmlq opencode python"
+  fail=0
+  for t in $tools; do
+    if ! p="$(command -v "$t" 2>/dev/null)"; then
+      echo "  MISSING: $t (not on PATH)"; fail=1; continue
+    fi
+    # resolve symlinks too, so the assertion survives either shim or install layout
+    rp="$(readlink -f "$p" 2>/dev/null || echo "$p")"
+    if [ "${p#"$prefix"/}" != "$p" ] || [ "${rp#"$prefix"/}" != "$rp" ]; then
+      echo "  ok: $t -> $p"
+    else
+      echo "  WRONG PREFIX: $t -> $p (resolved $rp; expected under $prefix)"; fail=1
+    fi
+  done
+  [ "$fail" = 0 ] && echo MISE_TOOLS_OK || { echo "FAIL: mise tool check"; exit 1; }
 '
 
 echo "== browser (informational) =="
@@ -59,9 +86,8 @@ docker exec "$NAME" bash -lc 'command -v chromium && chromium --version' \
 
 echo "== data dirs =="
 docker exec "$NAME" bash -lc '
-  test -d /home/claw/data/openclaw &&
-  test -d /home/claw/data/openclaw-workspace &&
-  stat -c "%U" /home/claw/data/openclaw | grep -qx claw &&
+  test -d /root/data/openclaw &&
+  test -d /root/data/openclaw-workspace &&
   echo DIRS_OK
 '
 

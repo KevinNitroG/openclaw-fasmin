@@ -6,12 +6,10 @@ export DEBIAN_FRONTEND=noninteractive
 
 # Packages from the base Debian repos (installed BEFORE the yazi apt repo is added).
 base_packages=(
-  # essential: TLS certs, fetch, gpg, vcs, init, sudo, pager, core utils
-  ca-certificates curl gnupg git tini sudo less coreutils procps file
-  # homebrew build deps
-  build-essential
+  # essential: TLS certs, fetch, gpg, vcs, init, pager, core utils
+  ca-certificates curl gnupg git tini less coreutils procps file
   # cli toolbelt
-  ripgrep fzf vim zoxide fd-find jq ffmpeg
+  ripgrep fzf vim zoxide fd-find jq ffmpeg tmux
 )
 
 # yazi + the previewers/extractors it integrates with (needs the griffo.io apt repo).
