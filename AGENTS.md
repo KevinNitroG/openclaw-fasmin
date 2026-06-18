@@ -1,7 +1,7 @@
 # Agent guidance
 
 This repo builds a self-contained Docker image (OpenClaw gateway + CLI toolbelt) for Railway.
-It runs entirely as **root**; `HOME` is `/root` and all state lives under `/root/data`.
+It runs entirely as **root**; `HOME` is `/root` and all state lives under `/root/.openclaw`.
 
 ## Working on the host
 

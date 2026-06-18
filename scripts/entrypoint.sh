@@ -1,18 +1,9 @@
 #!/usr/bin/env bash
-# Runtime bootstrap. The container runs as root, so the persisted volume is fully
-# readable/writable regardless of its on-disk ownership — no chown dance is needed.
-# Ensure the state/workspace dirs exist, harden any existing secrets, then start the gateway.
+# Runtime bootstrap. The container runs as root with HOME=/root. OpenClaw resolves and
+# creates its own state and workspace dirs on boot (defaults: /root/.openclaw and
+# /root/.openclaw/workspace), so no per-path mkdir/chmod is needed here. The persisted
+# volume is mounted at the state dir and is fully readable/writable as root regardless of
+# on-disk ownership. Just hand off to the gateway supervisor.
 set -euo pipefail
-
-DATA_DIR="${DATA_DIR:-/root/data}"
-STATE_DIR="${OPENCLAW_STATE_DIR:-$DATA_DIR/openclaw}"
-WS_DIR="${OPENCLAW_WORKSPACE_DIR:-$DATA_DIR/openclaw-workspace}"
-CONFIG_PATH="${OPENCLAW_CONFIG_PATH:-$STATE_DIR/openclaw.json}"
-
-mkdir -p "$STATE_DIR" "$WS_DIR"
-
-# Best-effort hardening of any existing secrets.
-[ -d "$STATE_DIR/credentials" ] && chmod 700 "$STATE_DIR/credentials" || true
-[ -f "$CONFIG_PATH" ] && chmod 600 "$CONFIG_PATH" || true
 
 exec /usr/local/bin/gateway-supervisor.sh
