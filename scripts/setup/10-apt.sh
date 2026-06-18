@@ -12,6 +12,8 @@ base_packages=(
   ripgrep fzf vim zoxide fd-find jq ffmpeg tmux
   # shell completion framework (not present in bookworm-slim by default)
   bash-completion
+  # runtime lib required by pnpm (libatomic.so.1)
+  libatomic1
 )
 
 # yazi + the previewers/extractors it integrates with (needs the griffo.io apt repo).
