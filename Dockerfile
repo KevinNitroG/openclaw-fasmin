@@ -4,6 +4,8 @@
 # not by the base image. Pinned by digest; Renovate's docker manager keeps it current.
 FROM debian:bookworm-slim@sha256:96e378d7e6531ac9a15ad505478fcc2e69f371b10f5cdf87857c4b8188404716
 
+SHELL ["/bin/bash", "-c"]
+
 # --- build args ---
 # renovate: datasource=github-releases depName=jdx/mise
 ARG MISE_VERSION=v2026.6.10
@@ -28,39 +30,26 @@ ENV TZ=${TZ} \
   OPENCLAW_DISABLE_BONJOUR=1 \
   PATH=/root/.local/bin:/root/.local/share/mise/shims:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
-# --- layer 1: system packages (changes rarely) ---
 COPY scripts/setup/10-apt.sh /tmp/setup/10-apt.sh
 RUN OPENCLAW_INSTALL_BROWSER=${OPENCLAW_INSTALL_BROWSER} /tmp/setup/10-apt.sh \
   && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /root
 
-# --- layer 2: mise binary ---
 COPY scripts/setup/20-mise.sh /tmp/setup/20-mise.sh
 RUN MISE_VERSION=${MISE_VERSION} /tmp/setup/20-mise.sh
 
-# --- layer 3: tools (re-runs only when mise.claw.toml changes) ---
 COPY mise.claw.toml /root/.config/mise/config.toml
 RUN mise install
 
-# Pre-generate bash completion once at build (after openclaw is installed). NOT --write-state:
-# that targets the volume-backed state dir, which the runtime mount would hide. Bake it to a
-# fixed home path instead; .bashrc sources this so shells don't invoke openclaw on every start.
-RUN mkdir -p /root/.local/share/bash-completion \
-  && mise exec -- openclaw completion --shell bash \
-  > /root/.local/share/bash-completion/openclaw.bash
+COPY scripts/setup/30-bash.sh /tmp/setup/30-bash.sh
+RUN /tmp/setup/30-bash.sh
 
-# --- layer 4: config + runtime scripts (changes most often) ---
-COPY config/bashrc  /root/.bashrc
+COPY config/bashrc /root/.bashrc
 COPY config/profile /root/.profile
-COPY config/vimrc   /root/.vimrc
+COPY config/vimrc /root/.vimrc
 COPY scripts/entrypoint.sh scripts/gateway-supervisor.sh scripts/claw-gateway-restart \
   /usr/local/bin/
-
-# No /etc/profile.d env snapshot is needed: the image runs entirely as root with no `su -`
-# switch, so interactive shells (Railway shell, `docker exec`) inherit the baked ENV directly.
-# (PATH is the one exception — Debian's /etc/profile resets it for login shells — which is why
-# config/profile re-adds the mise shims.)
 
 EXPOSE 18789
 ENTRYPOINT ["tini", "-s", "--"]

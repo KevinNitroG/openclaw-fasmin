@@ -4,17 +4,15 @@ case $- in *i*) ;; *) return ;; esac # only for interactive shells
 export EDITOR=vim
 export PATH="$HOME/.local/bin:$HOME/.local/share/mise/shims:$PATH"
 
-# mise activation (adds tools to PATH dynamically for this shell)
-if command -v mise >/dev/null 2>&1; then
-  eval "$(mise activate bash)"
-fi
+eval "$(mise activate bash)"
+eval "$(zoxide init bash)"
 
-# zoxide (smarter cd; provides `z`)
-if command -v zoxide >/dev/null 2>&1; then
-  eval "$(zoxide init bash)"
+if ! shopt -oq posix; then
+  if [ -f /usr/share/bash-completion/bash_completion ]; then
+    . /usr/share/bash-completion/bash_completion
+  elif [ -f /etc/bash_completion ]; then
+    . /etc/bash_completion
+  fi
 fi
-
-# OpenClaw Completion
-[ -f "$HOME/.local/share/bash-completion/openclaw.bash" ] && source "$HOME/.local/share/bash-completion/openclaw.bash"
 
 alias ll='ls -alh'
