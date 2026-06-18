@@ -5,30 +5,27 @@
 FROM debian:bookworm-slim@sha256:96e378d7e6531ac9a15ad505478fcc2e69f371b10f5cdf87857c4b8188404716
 
 # --- build args ---
-# Single source for the persisted data root; the OPENCLAW paths below derive from it.
-# This image runs entirely as root; HOME is /root.
-ARG DATA_DIR=/root/data
 # renovate: datasource=github-releases depName=jdx/mise
 ARG MISE_VERSION=v2026.6.10
 ARG OPENCLAW_INSTALL_BROWSER=1
 ARG TZ=Asia/Ho_Chi_Minh
 
-# --- baked environment (OPENCLAW paths + PATH derive from DATA_DIR / /root) ---
+# --- baked environment ---
+# OpenClaw path vars (OPENCLAW_STATE_DIR / OPENCLAW_CONFIG_PATH / OPENCLAW_WORKSPACE_DIR)
+# are intentionally LEFT UNSET so OpenClaw uses its own defaults under HOME (/root):
+# state /root/.openclaw, config /root/.openclaw/openclaw.json, workspace /root/.openclaw/workspace.
+# An operator can override any one of them independently at runtime.
 # mise's shims dir is on PATH on purpose: the gateway is launched NON-interactively
 # (entrypoint -> supervisor -> openclaw), so `mise activate` in .bashrc never runs for it.
 # Per mise docs, putting the shims dir on PATH is the way to resolve tools in init-script
 # / non-interactive contexts. .local/bin holds the mise binary itself.
-ENV DATA_DIR=${DATA_DIR} \
-  TZ=${TZ} \
+ENV TZ=${TZ} \
   NODE_ENV=production \
   EDITOR=vim \
   DO_NOT_TRACK=1 \
   NEXT_TELEMETRY_DISABLED=1 \
   CLAWHUB_DISABLE_TELEMETRY=1 \
   OPENCLAW_DISABLE_BONJOUR=1 \
-  OPENCLAW_STATE_DIR=${DATA_DIR}/openclaw \
-  OPENCLAW_CONFIG_PATH=${DATA_DIR}/openclaw/openclaw.json \
-  OPENCLAW_WORKSPACE_DIR=${DATA_DIR}/openclaw-workspace \
   PATH=/root/.local/bin:/root/.local/share/mise/shims:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 # --- layer 1: system packages (changes rarely) ---

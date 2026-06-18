@@ -1,6 +1,6 @@
 # Applies when Railway BUILDS this repo's Dockerfile (alternative path).
 # For our default path (prebuilt GHCR image), enter the same settings in the
-# Railway dashboard: Source = Docker image, Volume mount = /root/data,
+# Railway dashboard: Source = Docker image, Volume mount = /root/.openclaw,
 # Healthcheck path = /healthz, and the env vars from the README.
 [build]
 builder = "DOCKERFILE"
