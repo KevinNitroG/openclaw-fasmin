@@ -10,6 +10,8 @@ base_packages=(
   ca-certificates curl gnupg git tini less coreutils procps file
   # cli toolbelt
   ripgrep fzf vim zoxide fd-find jq ffmpeg tmux
+  # shell completion framework (not present in bookworm-slim by default)
+  bash-completion
 )
 
 # yazi + the previewers/extractors it integrates with (needs the griffo.io apt repo).
