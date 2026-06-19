@@ -3,6 +3,13 @@ name: build
 on:
   push:
     branches: [main]
+    paths:
+      - 'Dockerfile'
+      - 'scripts/**'
+      - 'config/**'
+      - 'mise.claw.toml'
+      - '.dockerignore'
+      - '.github/workflows/build.yml'
   workflow_dispatch:
 
 permissions:
