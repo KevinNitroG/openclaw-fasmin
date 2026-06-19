@@ -28,6 +28,7 @@ ENV TZ=${TZ} \
   NEXT_TELEMETRY_DISABLED=1 \
   CLAWHUB_DISABLE_TELEMETRY=1 \
   OPENCLAW_DISABLE_BONJOUR=1 \
+  WHISPER_CPP_MODEL=/root/.openclaw/models/whisper/ggml-base.bin \
   PATH=/root/.local/bin:/root/.local/share/mise/shims:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 COPY scripts/setup/10-apt.sh /tmp/setup/10-apt.sh
@@ -38,6 +39,9 @@ WORKDIR /root
 
 COPY scripts/setup/20-mise.sh /tmp/setup/20-mise.sh
 RUN MISE_VERSION=${MISE_VERSION} /tmp/setup/20-mise.sh
+
+COPY scripts/setup/25-audio.sh /tmp/setup/25-audio.sh
+RUN /tmp/setup/25-audio.sh
 
 COPY mise.claw.toml /root/.config/mise/config.toml
 RUN mise install
