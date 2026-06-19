@@ -14,6 +14,8 @@ base_packages=(
   bash-completion
   # runtime lib required by pnpm (libatomic.so.1)
   libatomic1
+  # audio transcription (whisper-cpp for OpenClaw local voice notes)
+  whisper-cpp
 )
 
 # yazi + the previewers/extractors it integrates with (needs the griffo.io apt repo).
