@@ -1,4 +1,3 @@
-" fasmin container vimrc — plugin-free baseline
 set nocompatible
 set encoding=utf-8
 set number
@@ -21,7 +20,6 @@ set undodir=$HOME/.vim/undo
 syntax on
 filetype plugin indent on
 
-" --- replicated from ~/.vim (plugin-free) ---
 let mapleader = ' '
 let maplocalleader = '\'
 
@@ -54,6 +52,7 @@ nnoremap <leader><Esc> :noh<return>
 nnoremap <leader>y :%y+<return>
 nnoremap <leader>ow :set wrap!<CR>
 nnoremap <leader>w :close<CR>
+nnoremap <leader>e :Lexplore<CR>
 nnoremap <C-j> <C-w>j
 vnoremap <C-j> <C-w>j
 nnoremap <C-k> <C-w>k
@@ -68,11 +67,11 @@ vnoremap <A-j> :m '>+1<CR>gv=gv
 vnoremap <A-k> :m '<-2<CR>gv=gv
 vnoremap < <gv
 vnoremap > >gv
-vnoremap p "_dP
 vnoremap <leader>us :sort<CR>gv<ESC>
 vnoremap <leader>uu :sort u<CR>gv<ESC>
 nnoremap H :bprevious<CR>
 nnoremap L :bnext<CR>
+nnoremap <leader>c :bdelete<CR>
 nnoremap <leader>C :bufdo bdelete<cr>
 nnoremap <C-right> :vertical resize +2<CR>
 nnoremap <C-left> :vertical resize -2<CR>
@@ -85,5 +84,4 @@ nnoremap <Down> :tabclose<CR>
 nnoremap ]<Space> :call append(line('.'), '')<CR>
 nnoremap [<Space> :call append(line('.') - 1, '')<CR>
 
-au FocusGained,BufEnter * silent! checktime
-autocmd VimEnter * silent !echo -ne "\e[2 q"
+autocmd FileType json setlocal formatprg=jq\ .
