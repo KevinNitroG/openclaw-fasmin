@@ -14,8 +14,6 @@ base_packages=(
   bash-completion
   # runtime lib required by pnpm (libatomic.so.1)
   libatomic1
-  # audio transcription (whisper-cpp for OpenClaw local voice notes)
-  whisper-cpp
 )
 
 # yazi + the previewers/extractors it integrates with (needs the griffo.io apt repo).
@@ -44,5 +42,18 @@ apt-get install -y --no-install-recommends "${yazi_packages[@]}"
 if [ "${OPENCLAW_INSTALL_BROWSER:-1}" = "1" ]; then
   apt-get install -y --no-install-recommends "${browser_packages[@]}"
 fi
+
+# --- whisper.cpp (audio transcription) from sid repo ---
+# whisper.cpp-tools is only available in Debian sid (unstable), not in trixie.
+# Add sid temporarily, pin to low priority so it doesn't pull in sid packages
+# for anything else, install whisper.cpp-tools, then remove the repo.
+echo "deb http://deb.debian.org/debian sid main" \
+  > /etc/apt/sources.list.d/debian-sid.list
+echo "Package: *\nPin: release a=unstable\nPin-Priority: 100" \
+  > /etc/apt/preferences.d/pin-sid
+apt-get update -o Dir::Etc::sourcelist=/etc/apt/sources.list.d/debian-sid.list \
+  -o Dir::Etc::sourceparts="-"
+apt-get install -y --no-install-recommends -t unstable whisper.cpp-tools
+rm -f /etc/apt/sources.list.d/debian-sid.list /etc/apt/preferences.d/pin-sid
 
 apt-get clean
