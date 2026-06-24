@@ -2,7 +2,7 @@
 
 # Plain Debian base — node is provided by mise (single, renovate-tracked source of truth),
 # not by the base image. Pinned by digest; Renovate's docker manager keeps it current.
-FROM debian:trixie-slim@sha256:28de0877c2189802884ccd20f15ee41c203573bd87bb6b883f5f46362d24c5c2
+FROM debian:trixie-20260623-slim@sha256:28de0877c2189802884ccd20f15ee41c203573bd87bb6b883f5f46362d24c5c2
 
 SHELL ["/bin/bash", "-c"]
 
