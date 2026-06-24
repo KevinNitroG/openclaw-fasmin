@@ -13,6 +13,12 @@
       "matchStrings": ["OFFICIAL_VERSION=\"(?<currentValue>\\d+\\.\\d+\\.\\d+)\""],
       "depNameTemplate": "openclaw",
       "datasourceTemplate": "npm"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/scripts/setup/40-openclaw\\.sh$/"],
+      "matchStrings": ["\\[\"(?<depName>[^\"]+)\"\\]=\"(?<currentValue>[^\"]+)\""],
+      "datasourceTemplate": "npm"
     }
   ],
   "packageRules": [
