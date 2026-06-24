@@ -11,7 +11,6 @@ SHELL ["/bin/bash", "-c"]
 ARG MISE_VERSION=v2026.6.10
 ARG OPENCLAW_INSTALL_BROWSER=1
 ARG TZ=Asia/Ho_Chi_Minh
-ARG GH_TOKEN
 
 # --- baked environment ---
 # OpenClaw path vars (OPENCLAW_STATE_DIR / OPENCLAW_CONFIG_PATH / OPENCLAW_WORKSPACE_DIR)
@@ -45,7 +44,9 @@ COPY scripts/setup/25-audio.sh /tmp/setup/25-audio.sh
 RUN /tmp/setup/25-audio.sh
 
 COPY mise.claw.toml /root/.config/mise/config.toml
-RUN GH_TOKEN=${GH_TOKEN} mise install
+# GH_TOKEN via BuildKit secret — avoids baking token into image layers/metadata
+RUN --mount=type=secret,id=gh_token \
+    GH_TOKEN=$(cat /run/secrets/gh_token) mise install
 
 COPY scripts/setup/30-bash.sh /tmp/setup/30-bash.sh
 RUN /tmp/setup/30-bash.sh
