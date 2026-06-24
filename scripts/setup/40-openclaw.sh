@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-OFFICIAL_VERSION="2026.6.8"
+OFFICIAL_VERSION="2026.6.10"
 
 declare -A PACKAGES=(
   ["@martian-engineering/lossless-claw"]="0.13.1"
