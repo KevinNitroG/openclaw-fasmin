@@ -4,7 +4,7 @@
 node = "24"
 "npm:openclaw" = { version = "2026.6.8", npm_args = "--ignore-scripts=false" }
 "npm:ctx7" = "0.5.3"
-"pnpm" = "11.7.0"
+"pnpm" = "11.9.0"
 uv = "0.11.24"
 gh = "2.94.0"
 "github:openclaw/gogcli" = "0.31.0"
