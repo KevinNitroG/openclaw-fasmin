@@ -3,7 +3,7 @@
 OFFICIAL_VERSION="2026.6.10"
 
 declare -A PACKAGES=(
-  ["@martian-engineering/lossless-claw"]="0.13.1"
+  ["@martian-engineering/lossless-claw"]="0.15.1"
 )
 
 for package in "${!PACKAGES[@]}"; do
