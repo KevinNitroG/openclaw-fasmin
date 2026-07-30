@@ -3,7 +3,7 @@
 [tools]
 node = "24"
 "npm:openclaw" = { version = "2026.6.10", npm_args = "--ignore-scripts=false" }
-"npm:ctx7" = "0.5.3"
+"npm:ctx7" = "0.5.7"
 "pnpm" = "11.9.0"
 uv = "0.11.24"
 gh = "2.95.0"
